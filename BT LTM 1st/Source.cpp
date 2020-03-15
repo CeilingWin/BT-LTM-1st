@@ -1,14 +1,17 @@
-#define _WINSOCK_DEPRECATED_NO_WARNINGS
+﻿#define _WINSOCK_DEPRECATED_NO_WARNINGS
 #include<iostream>
 #include<string.h>
 #include<WinSock2.h>
 #include<WS2tcpip.h>
 #pragma comment(lib,"ws2_32")
 using namespace std;
+//union data : fix lỗi hàm memcpy() khi copy vào biến addr với addrlen dài sẽ chiếm dụng bộ nhớ của biến khác 
+union Data {
+	SOCKADDR_IN addr;
+	char c[50];
+};
 bool checkDomain(char *domain) {
-	//kiem tra co phai la ten mien hay khong
-	//neu dung tra ve true
-	//sai tra ve false
+	//kiểm tra xem domain có phải tên miền hợp lệ không, nếu đúng trả về true 
 	int i = 0;
 	char c;
 	while (domain[i] != 0) {
@@ -40,7 +43,7 @@ int main() {
 		cout << "chuoi vua nhap khong phai ten mien\n";
 	}
 	else {
-		SOCKADDR_IN addr;
+		Data data;
 		addrinfo *info;
 		int cannotGetAddrInfo = getaddrinfo(domain, "http", NULL, &info);
 		if (cannotGetAddrInfo) {
@@ -50,8 +53,8 @@ int main() {
 			int ipSt = 0;
 			do {
 				ipSt++;
-				memcpy(&addr, info->ai_addr, info->ai_addrlen);
-				cout <<"dia chi ip "<<ipSt<<":"<< inet_ntoa(addr.sin_addr) << "\n";
+				memcpy(&data.addr, info->ai_addr, info->ai_addrlen);
+				cout <<"dia chi ip "<<ipSt<<":"<< inet_ntoa(data.addr.sin_addr) << "\n";
 				info = info->ai_next;
 			} while (info != NULL);
 		}
